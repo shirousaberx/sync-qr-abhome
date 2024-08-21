@@ -1,6 +1,5 @@
 // Script ini untuk sync dari database cloud ke local
-// Pertama kali jalan, duplicate seluruh database cloud
-// Setelah itu, tiap interval, update database local dari cloud
+// Sync dengan fetch data dari master mulai dari = waktu sekarang - SYNC_INTERVAL
 
 // Hanya untuk table member dan qr dari DB abhome_tenant
 
@@ -9,7 +8,7 @@ const sqlstring = require('sqlstring')
 const { format } = require('fecha')
 require('dotenv').config()
 
-const SYNC_INTERVAL = 1   // sync tiap 1 menit
+const SYNC_INTERVAL = Number(process.env.SYNC_INTERVAL)  // sync dari waktu 1 menit ke belakang
 
 const pool_local = mysql.createPool({
   host           : process.env.LOCAL_HOST, 
@@ -35,25 +34,19 @@ let firstTime = true;   // untuk pertama kali, copy semua dari database master
 
 const fetchFromCloud = async() => {
   let syncStartTime = new Date();
-  // sync data mulai dari SYNC_INTERVAL - 1 menit yang lalu
-  // -1 menit untuk buffer time, karena ada jeda waktu antara fetchFromCloud dan upsertIntoLocal
-  syncStartTime.setMinutes(syncStartTime.getMinutes() - SYNC_INTERVAL - 1)  
+  // sync data mulai dari SYNC_INTERVAL menit yang lalu
+  syncStartTime.setMinutes(syncStartTime.getMinutes() - SYNC_INTERVAL)  
 
   let syncStartTime_str = format(syncStartTime, 'YYYY-MM-DD HH:mm:ss')
   
   // ============== Fetch from qr table ==============
   let query = sqlstring.format(`
     SELECT * 
-    FROM qr` 
+    FROM qr
+    WHERE created_at >= ?
+    `, 
+    [syncStartTime_str] 
   )
-
-  if (!firstTime) {
-    query += sqlstring.format(`
-      WHERE created_at >= ?
-      `, 
-      [syncStartTime_str]
-    )
-  }
 
   let rows = (await pool_cloud.query(query))[0];
   updateQRFromCloud = rows
@@ -63,16 +56,11 @@ const fetchFromCloud = async() => {
   
   query = sqlstring.format(`
     SELECT * 
-    FROM member` 
+    FROM member 
+    WHERE created_at >= ? OR updated_at >= ?
+    `, 
+    [syncStartTime_str, syncStartTime_str]
   )
-  
-  if (!firstTime) {
-    query += sqlstring.format(`
-      WHERE created_at >= ? OR updated_at >= ?
-      `, 
-      [syncStartTime_str, syncStartTime_str]
-    )
-  }
   
   rows = (await pool_cloud.query(query))[0];
   updateMemberFromCloud = rows
