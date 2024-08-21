@@ -1,5 +1,5 @@
 // Script ini untuk sync dari database cloud ke local
-// Sync dengan fetch data dari master mulai dari = waktu sekarang - SYNC_INTERVAL
+// Sync dengan fetch data dari master mulai dari = waktu sekarang - SYNC_BUFFER
 
 // Hanya untuk table member dan qr dari DB abhome_tenant
 
@@ -8,7 +8,7 @@ const sqlstring = require('sqlstring')
 const { format } = require('fecha')
 require('dotenv').config()
 
-const SYNC_INTERVAL = Number(process.env.SYNC_INTERVAL)  // sync dari waktu 1 menit ke belakang
+const SYNC_BUFFER = Number(process.env.SYNC_BUFFER) 
 
 const pool_local = mysql.createPool({
   host           : process.env.LOCAL_HOST, 
@@ -34,8 +34,8 @@ let firstTime = true;   // untuk pertama kali, copy semua dari database master
 
 const fetchFromCloud = async() => {
   let syncStartTime = new Date();
-  // sync data mulai dari SYNC_INTERVAL menit yang lalu
-  syncStartTime.setMinutes(syncStartTime.getMinutes() - SYNC_INTERVAL)  
+  // sync data mulai dari SYNC_BUFFER menit yang lalu
+  syncStartTime.setMinutes(syncStartTime.getMinutes() - SYNC_BUFFER)  
 
   let syncStartTime_str = format(syncStartTime, 'YYYY-MM-DD HH:mm:ss')
   

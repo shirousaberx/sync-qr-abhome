@@ -4,7 +4,7 @@ Private project for syncing abhome door QR database between local (slave) and cl
 ## To start
 1. ```npm install```
 
-2. Create and fill `.env` file, make sure to give `SYNC_INTERVAL` generous amount. `SYNC_INTERVAL` is in minute
+2. Create and fill `.env` file, make sure to give `SYNC_BUFFER` generous amount. `SYNC_BUFFER` is in minute
 
 3. Replicate the database
 
