@@ -133,6 +133,8 @@ async function sleep(ms) {
 }
 
 const execute = async() => {
+  console.log('Time start: ', format(new Date(), 'YYYY-MM-DD HH:mm:ss'))
+
   const startTime = performance.now()
   
   await fetchFromCloud();
