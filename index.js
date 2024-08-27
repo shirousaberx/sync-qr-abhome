@@ -76,7 +76,7 @@ const upsertQRIntoLocal = async() => {
   }
 
   let query = sqlstring.format(`
-    REPLACE INTO qr
+    INSERT IGNORE INTO qr
     VALUES
   `)
   
@@ -89,7 +89,7 @@ const upsertQRIntoLocal = async() => {
   query = query.substring(0, query.length - 1) + ';'
   
   let rows = (await pool_local.query(query))[0];
-  console.log('result from upsert qr: ', rows)
+  console.log('result from insert ignore qr: ', rows)
 }
 
 const upsertMemberIntoLocal = async() => {
@@ -126,10 +126,6 @@ const upsertMemberIntoLocal = async() => {
 
   rows = (await pool_local.query(query))[0];
   console.log('result from upsert member: ', rows)
-}
-
-async function sleep(ms) {
-  await new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 const execute = async() => {
